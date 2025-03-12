@@ -1,0 +1,7 @@
+supabase
+python-dotenv
+flask
+flask-cors
+flask-socketio
+requests
+twilio
