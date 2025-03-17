@@ -200,8 +200,7 @@ class DatabaseService {
     try {
       final response = await _client
           .from('peer_jobs')
-          .select(
-              '*, peer_job_skills(skill_id, skills(name)), users!user_id(id, full_name, profile_picture)')
+          .select('*')
           .eq('id', jobId)
           .single();
 
