@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../models/job.dart';
 import '../widgets/uplift_app_bar.dart';
 import '../widgets/uplift_bottom_nav.dart';
+import '../screens/p2p/peer_job_list.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -83,7 +84,7 @@ Widget build(BuildContext context) {
                 _buildJobListingsTab(),
                 
                 // Student Services Tab
-                _buildStudentServicesTab(),
+                const PeerJobList(),
               ],
             ),
           ),
