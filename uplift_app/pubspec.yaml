@@ -17,6 +17,13 @@ dependencies:
   cached_network_image: ^3.3.1
   intl: ^0.20.2
   url_launcher: ^6.2.2
+  image_picker: ^0.8.7      # picking images and videos
+  file_picker: ^5.2.6       # Alternative for file selection
+  video_player: ^2.6.0      # playing videos
+  chewie: ^1.4.0            # better video player UI
+  carousel_slider: ^4.2.1   # image gallery
+  uuid: ^3.0.7              # generating unique filenames
+  path: ^1.8.3   
   
   # Updated Supabase packages
   supabase_flutter: ^2.0.0
