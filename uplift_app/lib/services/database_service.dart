@@ -110,92 +110,39 @@ class DatabaseService {
   }
 
   // Create a new peer job
-  // Future<PeerJob?> createPeerJob(PeerJob peerJob) async {
-  //   try {
-  //     // First insert the basic peer job data
-  //     final response = await _client
-  //         .from('peer_jobs')
-  //         .insert({
-  //           'title': peerJob.title,
-  //           'description': peerJob.description,
-  //           'user_id': peerJob.userId,
-  //           'location': peerJob.location,
-  //           'budget': peerJob.budget,
-  //           'currency': peerJob.currency,
-  //           'timeframe': peerJob.timeframe,
-  //           'posted_date': DateTime.now().toIso8601String(),
-  //           'status': 'open',
-  //           'is_remote': peerJob.isRemote,
-  //         })
-  //         .select()
-  //         .single();
-
-  //     final String jobId = response['id'];
-
-  //     // Then add skills using the join table
-  //     if (peerJob.skills.isNotEmpty) {
-  //       // For each skill, first check if it exists in the skills table
-  //       for (String skillName in peerJob.skills) {
-  //         // Try to find the skill
-  //         final skillResponse = await _client
-  //             .from('skills')
-  //             .select()
-  //             .eq('name', skillName)
-  //             .maybeSingle();
-
-  //         String skillId;
-
-  //         // If skill doesn't exist, create it
-  //         if (skillResponse == null) {
-  //           final newSkill = await _client
-  //               .from('skills')
-  //               .insert({'name': skillName})
-  //               .select()
-  //               .single();
-
-  //           skillId = newSkill['id'];
-  //         } else {
-  //           skillId = skillResponse['id'];
-  //         }
-
-  //         // Create the join between peer job and skill
-  //         await _client
-  //             .from('peer_job_skills')
-  //             .insert({
-  //               'peer_job_id': jobId,
-  //               'skill_id': skillId,
-  //             });
-  //       }
-  //     }
-
-  //     // Return the created job with complete data
-  //     return getPeerJobById(jobId);
-  //   } catch (e) {
-  //     print('Error creating peer job: $e');
-  //     return null;
-  //   }
-  // }
   Future<Map<String, dynamic>?> createPeerJob(PeerJob job) async {
-    final response =
-        await _supabaseService.client.from('peer_jobs').insert(job.toMap());
+    try {
+      final response = await _supabaseService.client
+          .from('peer_jobs')
+          .insert(job.toMap())
+          .select()
+          .single();
 
-    // Check if response is null
-    if (response == null) {
-      print(
-          "Error: Response is null. Check your Supabase client initialization.");
+      return response;
+    } catch (e) {
+      print('Error creating peer job: $e');
       return null;
     }
-
-    // Now check if there is an error in the response
-    if (response.error != null) {
-      print('Error inserting job: ${response.error!.message}');
-      return null;
-    }
-
-    return response.data;
   }
 
-  // Get peer job by ID (helper method)
+  // Update an existing peer job
+  Future<Map<String, dynamic>?> updatePeerJob(PeerJob job) async {
+    try {
+      final response = await _supabaseService.client
+          .from('peer_jobs')
+          .update(job.toMap())
+          .eq('id', job.id)
+          .select()
+          .single();
+
+      return response;
+    } catch (e) {
+      print('Error updating peer job: $e');
+      return null;
+    }
+  }
+
+  // Get peer job by ID 
   Future<PeerJob?> getPeerJobById(String jobId) async {
     try {
       final response = await _client
@@ -210,6 +157,49 @@ class DatabaseService {
       return null;
     }
   }
+
+  // Increment view count for a peer job
+  //Future<bool> incrementPeerJobViews(String jobId) async {
+    //try {
+      //await _client.rpc('increment_peer_job_views', params: {'job_id': jobId});
+      //return true;
+    //} catch (e) {
+      //print('Error incrementing peer job views: $e');
+      //return false;
+    //}
+  //}
+
+  // Add a review for a peer job
+  Future<bool> addPeerJobReview(String jobId, String reviewerId, int rating, String comment) async {
+    try {
+      await _client.from('peer_job_reviews').insert({
+        'peer_job_id': jobId,
+        'reviewer_id': reviewerId,
+        'rating': rating,
+        'comment': comment,
+      });
+      return true;
+    } catch (e) {
+      print('Error adding peer job review: $e');
+      return false;
+    }
+  }
+
+  // Get reviews for a peer job
+  //Future<List<Map<String, dynamic>>> getPeerJobReviews(String jobId) async {
+    //try {
+      //final response = await _client
+          //.from('peer_job_reviews')
+          //.select('*, users!reviewer_id(full_name, profile_picture)')
+          //.eq('peer_job_id', jobId)
+          //.order('created_at', ascending: false);
+
+      //return List<Map<String, dynamic>>.from(response);
+    //} catch (e) {
+      //print('Error getting peer job reviews: $e');
+      //return [];
+    //}
+  //}
 
   // WALLET METHODS
 
@@ -227,8 +217,7 @@ class DatabaseService {
   }
 
   // Get transaction history
-  Future<List<Transaction>> getTransactions(String walletId,
-      {int limit = 20}) async {
+  Future<List<Transaction>> getTransactions(String walletId, {int limit = 20}) async {
     try {
       final response = await _client
           .from('transactions')
