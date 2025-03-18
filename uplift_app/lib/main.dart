@@ -12,27 +12,27 @@ import 'screens/wallet/withdraw_screen.dart';
 import 'screens/post_screen.dart';
 import 'services/supabase_service.dart';
 import 'services/job_service.dart';
-
+import 'screens/p2p/peer_job_details.dart';
 
 void main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Load environment variables
-  await dotenv.load();
-  
+  await dotenv.load(fileName: ".env");
+
   // Initialize Supabase
   await SupabaseService().initialize();
-  
+
   // Initialize mock job data for development
   JobService().initializeMockJobs();
-  
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -61,6 +61,11 @@ class MyApp extends StatelessWidget {
           final String jobId = settings.arguments as String;
           return MaterialPageRoute(
             builder: (context) => JobDetailScreen(jobId: jobId),
+          );
+        } else if (settings.name == '/peer-job-details') {
+          final String jobId = settings.arguments as String;
+          return MaterialPageRoute(
+            builder: (context) => PeerJobDetails(jobId: jobId),
           );
         }
         return null;
