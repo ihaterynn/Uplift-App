@@ -34,6 +34,8 @@ class SupabaseService {
     print('SupabaseService initialized successfully');
   }
 
+  
+
   // Get current user ID
   String? get currentUserId => _client.auth.currentUser?.id;
 

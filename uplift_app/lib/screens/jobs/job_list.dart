@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/job.dart';
 import '../../widgets/job_card.dart';
+import '../../services/database_service.dart';
 
 class JobListScreen extends StatefulWidget {
   final String? category;
@@ -23,99 +24,131 @@ class _JobListScreenState extends State<JobListScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
   String _selectedFilter = 'All Jobs';
-  final List<String> _filters = ['All Jobs', 'Remote', 'Full-time', 'Part-time', 'Contract'];
+  final List<String> _filters = [
+    'All Jobs',
+    'Remote',
+    'Full-time',
+    'Part-time',
+    'Contract'
+  ];
+
+  late final DatabaseService _databaseService;
 
   @override
   void initState() {
     super.initState();
+    _databaseService = DatabaseService();
     _searchController.text = widget.searchQuery ?? '';
     _loadJobs();
   }
 
+  // Future<void> _loadJobs() async {
+  //   // This would normally fetch from an API
+  //   // For now, we'll use dummy data
+  //   await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
+
+  //   setState(() {
+  //     _jobs = [
+  //       Job.dummy(
+  //         id: '1',
+  //         title: 'Software Engineer',
+  //         company: 'Google',
+  //         location: 'Mountain View, CA',
+  //       ),
+  //       Job.dummy(
+  //         id: '2',
+  //         title: 'Product Designer',
+  //         company: 'Apple',
+  //         location: 'Cupertino, CA',
+  //       ),
+  //       Job.dummy(
+  //         id: '3',
+  //         title: 'Data Scientist',
+  //         company: 'Netflix',
+  //         location: 'Los Gatos, CA',
+  //       ),
+  //       Job.dummy(
+  //         id: '4',
+  //         title: 'Flutter Developer',
+  //         company: 'Spotify',
+  //         location: 'Remote',
+  //       ),
+  //       Job.dummy(
+  //         id: '5',
+  //         title: 'Frontend Engineer',
+  //         company: 'Airbnb',
+  //         location: 'San Francisco, CA',
+  //       ),
+  //       Job.dummy(
+  //         id: '6',
+  //         title: 'Mobile Developer',
+  //         company: 'Twitter',
+  //         location: 'Hybrid',
+  //       ),
+  //       Job.dummy(
+  //         id: '7',
+  //         title: 'UX Designer',
+  //         company: 'Microsoft',
+  //         location: 'Seattle, WA',
+  //       ),
+  //       Job.dummy(
+  //         id: '8',
+  //         title: 'Backend Developer',
+  //         company: 'Amazon',
+  //         location: 'Remote',
+  //       ),
+  //       Job.dummy(
+  //         id: '9',
+  //         title: 'AI Engineer',
+  //         company: 'Meta',
+  //         location: 'New York, NY',
+  //       ),
+  //     ];
+
+  //     // Apply filtering based on category or search query
+  //     if (widget.category != null) {
+  //       _jobs = _jobs
+  //           .where((job) =>
+  //               job.employmentType.toLowerCase() ==
+  //                   widget.category!.toLowerCase() ||
+  //               job.location
+  //                   .toLowerCase()
+  //                   .contains(widget.category!.toLowerCase()))
+  //           .toList();
+  //     }
+
+  //     if (widget.searchQuery != null && widget.searchQuery!.isNotEmpty) {
+  //       final query = widget.searchQuery!.toLowerCase();
+  //       _jobs = _jobs
+  //           .where((job) =>
+  //               job.title.toLowerCase().contains(query) ||
+  //               job.company.toLowerCase().contains(query) ||
+  //               job.location.toLowerCase().contains(query) ||
+  //               job.skills.any((skill) => skill.toLowerCase().contains(query)))
+  //           .toList();
+  //     }
+
+  //     _isLoading = false;
+  //   });
+  // }
+
   Future<void> _loadJobs() async {
-    // This would normally fetch from an API
-    // For now, we'll use dummy data
-    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-    
-    setState(() {
-      _jobs = [
-        Job.dummy(
-          id: '1',
-          title: 'Software Engineer',
-          company: 'Google',
-          location: 'Mountain View, CA',
-        ),
-        Job.dummy(
-          id: '2',
-          title: 'Product Designer',
-          company: 'Apple',
-          location: 'Cupertino, CA',
-        ),
-        Job.dummy(
-          id: '3',
-          title: 'Data Scientist',
-          company: 'Netflix',
-          location: 'Los Gatos, CA',
-        ),
-        Job.dummy(
-          id: '4',
-          title: 'Flutter Developer',
-          company: 'Spotify',
-          location: 'Remote',
-        ),
-        Job.dummy(
-          id: '5',
-          title: 'Frontend Engineer',
-          company: 'Airbnb',
-          location: 'San Francisco, CA',
-        ),
-        Job.dummy(
-          id: '6',
-          title: 'Mobile Developer',
-          company: 'Twitter',
-          location: 'Hybrid',
-        ),
-        Job.dummy(
-          id: '7',
-          title: 'UX Designer',
-          company: 'Microsoft',
-          location: 'Seattle, WA',
-        ),
-        Job.dummy(
-          id: '8',
-          title: 'Backend Developer',
-          company: 'Amazon',
-          location: 'Remote',
-        ),
-        Job.dummy(
-          id: '9',
-          title: 'AI Engineer',
-          company: 'Meta',
-          location: 'New York, NY',
-        ),
-      ];
-      
-      // Apply filtering based on category or search query
-      if (widget.category != null) {
-        _jobs = _jobs.where((job) => 
-          job.employmentType.toLowerCase() == widget.category!.toLowerCase() ||
-          job.location.toLowerCase().contains(widget.category!.toLowerCase())
-        ).toList();
-      }
-      
-      if (widget.searchQuery != null && widget.searchQuery!.isNotEmpty) {
-        final query = widget.searchQuery!.toLowerCase();
-        _jobs = _jobs.where((job) => 
-          job.title.toLowerCase().contains(query) ||
-          job.company.toLowerCase().contains(query) ||
-          job.location.toLowerCase().contains(query) ||
-          job.skills.any((skill) => skill.toLowerCase().contains(query))
-        ).toList();
-      }
-      
-      _isLoading = false;
-    });
+    try {
+      final jobs = await _databaseService.getJobs();
+      setState(() {
+        _jobs = jobs;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error loading jobs: $e")),
+      );
+    }
   }
+
 
   @override
   void dispose() {
@@ -227,7 +260,7 @@ class _JobListScreenState extends State<JobListScreen> {
               },
             ),
           ),
-          
+
           // Filter chips
           SizedBox(
             height: 50,
@@ -238,7 +271,7 @@ class _JobListScreenState extends State<JobListScreen> {
               itemBuilder: (context, index) {
                 final filter = _filters[index];
                 final isSelected = _selectedFilter == filter;
-                
+
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
@@ -256,15 +289,18 @@ class _JobListScreenState extends State<JobListScreen> {
                     backgroundColor: Colors.grey[100],
                     selectedColor: const Color(0xFF4ECDC4).withOpacity(0.2),
                     labelStyle: TextStyle(
-                      color: isSelected ? const Color(0xFF4ECDC4) : Colors.grey[800],
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected
+                          ? const Color(0xFF4ECDC4)
+                          : Colors.grey[800],
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                 );
               },
             ),
           ),
-          
+
           // Results count
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -272,9 +308,9 @@ class _JobListScreenState extends State<JobListScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.showRecommended 
+                  widget.showRecommended
                       ? "Recommended Jobs"
-                      : widget.category != null 
+                      : widget.category != null
                           ? "${widget.category} Jobs"
                           : "All Jobs",
                   style: const TextStyle(
@@ -288,7 +324,8 @@ class _JobListScreenState extends State<JobListScreen> {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
                         ),
                       )
                     : Text(
@@ -301,13 +338,14 @@ class _JobListScreenState extends State<JobListScreen> {
               ],
             ),
           ),
-          
+
           // Job listings
           Expanded(
             child: _isLoading
                 ? const Center(
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
                     ),
                   )
                 : _jobs.isEmpty
@@ -428,7 +466,7 @@ class _JobListScreenState extends State<JobListScreen> {
                       ),
                     ),
                   ),
-                  
+
                   // Title
                   const Text(
                     "Filter Jobs",
@@ -438,21 +476,38 @@ class _JobListScreenState extends State<JobListScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Filters will go here
                   // This is just a placeholder. You would expand this with actual filter options.
                   Expanded(
                     child: ListView(
                       controller: scrollController,
                       children: [
-                        _buildFilterSection("Job Type", ["Full-time", "Part-time", "Contract", "Internship"]),
-                        _buildFilterSection("Experience Level", ["Entry-level", "Mid-level", "Senior", "Manager", "Executive"]),
-                        _buildFilterSection("Location", ["Remote", "Hybrid", "On-site"]),
-                        _buildFilterSection("Salary Range", ["\$0-\$50k", "\$50k-\$100k", "\$100k-\$150k", "\$150k+"]),
+                        _buildFilterSection("Job Type", [
+                          "Full-time",
+                          "Part-time",
+                          "Contract",
+                          "Internship"
+                        ]),
+                        _buildFilterSection("Experience Level", [
+                          "Entry-level",
+                          "Mid-level",
+                          "Senior",
+                          "Manager",
+                          "Executive"
+                        ]),
+                        _buildFilterSection(
+                            "Location", ["Remote", "Hybrid", "On-site"]),
+                        _buildFilterSection("Salary Range", [
+                          "\$0-\$50k",
+                          "\$50k-\$100k",
+                          "\$100k-\$150k",
+                          "\$150k+"
+                        ]),
                       ],
                     ),
                   ),
-                  
+
                   // Buttons
                   Row(
                     children: [
